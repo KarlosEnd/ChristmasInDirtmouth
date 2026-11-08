@@ -1,9 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- Change this to the path of your modded HK installation -->
-    <HollowKnightRefs>C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\</HollowKnightRefs>
+    <HollowKnightRefs Condition="Exists('C:\GOG Games\Hollow Knight\Hollow Knight_Data\Managed')">C:\GOG Games\Hollow Knight\Hollow Knight_Data\Managed</HollowKnightRefs>
+    <HollowKnightRefs Condition="'$(HollowKnightRefs)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\</HollowKnightRefs>
     <!-- Change this to the path where you want the ready-to-upload exports to be -->
-    <ExportDir>C:\Users\$(USERNAME)\Documents\Hollow Knight Mods\ChristmasInDirtmouth\bin\</ExportDir>
+    <ExportDir Condition="Exists('$(MSBuildProjectDirectory)\..\bin')">$(MSBuildProjectDirectory)\..\bin</ExportDir>
+    <ExportDir Condition="'$(ExportDir)' == ''">C:\Users\$(USERNAME)\Documents\Hollow Knight Mods\ChristmasInDirtmouth\bin\</ExportDir>
     <!-- Uncomment this to generate a documentation file to be included with the mod -->
     <!--<DocumentationFile>$(OutputPath)/$(AssemblyTitle).xml</DocumentationFile>-->
   </PropertyGroup>
@@ -31,6 +33,13 @@
 
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ExportDir)/$(TargetName)/" />
     
+    <ItemGroup>
+      <LangFiles Include="Lang\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/Lang/" Condition="Exists('Lang')" />
+    <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(ExportDir)/$(TargetName)/Lang/" Condition="Exists('Lang')" />
+    <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(ExportDir)/$(TargetName)/zip/Lang/" Condition="Exists('Lang')" />
+
     <Copy Condition="'$(DocumentationFile)' != ''" SourceFiles="ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb;$(TargetDir)/$(TargetName).xml" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" />
     <Copy Condition="'$(DocumentationFile)' == ''" SourceFiles="../ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" />
     
@@ -327,7 +336,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-      <EmbeddedResource Include="Resources\*" />
+    <EmbeddedResource Include="Resources\*" />
+    <EmbeddedResource Include="Lang\*.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\.gitignore" />

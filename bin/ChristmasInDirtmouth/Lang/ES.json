@@ -1,0 +1,22 @@
+{
+  "INV_NAME_CHRISTMAS_ITEM_0": "Guirnalda",
+  "INV_NAME_CHRISTMAS_ITEM_1": "Regalos",
+  "INV_NAME_CHRISTMAS_ITEM_2": "Velas",
+  "INV_NAME_CHRISTMAS_ITEM_3": "Árbol Navideño",
+  "INV_NAME_CHRISTMAS_ITEM_4": "Luces en Serie",
+  "SHOP_DESC_CHRISTMAS_ITEM_0": "Enredaderas retorcidas de musgo y hongos de Sendero Verde, adornadas con delicadas bayas de cristal. Un símbolo de resiliencia y unidad, incluso en los inviernos más crudos. Su suave brillo promete iluminar cualquier rincón oscuro.",
+  "SHOP_DESC_CHRISTMAS_ITEM_1": "Tesoros cuidadosamente envueltos de contenido desconocido. Un regalo para los curiosos y de buen corazón, rebosante del misterio y la alegría de la temporada. ¿Quién sabe qué maravillas podrían esconderse dentro?",
+  "SHOP_DESC_CHRISTMAS_ITEM_2": "Sencillos pilares de cera con llamas que titilan como suaves susurros. Su resplandor constante calma el alma inquieta y ahuyenta las sombras. Un recordatorio de tranquilidad en medio de la penumbra.",
+  "SHOP_DESC_CHRISTMAS_ITEM_3": "Un retoño grande y antiguo cubierto de musgo luminoso y decorado con pequeños adornos. Un emblema de esperanza perenne, cuya presencia llena el aire con una calidez nostálgica. Seguro que alegra a cualquier insecto.",
+  "SHOP_DESC_CHRISTMAS_ITEM_4": "Hilos de delicada luminiscencia, elaborados a partir de caparazones ahuecados de luciérnagas. Su suave zumbido brinda un resplandor acogedor, tejiendo luz a través de los caminos más sinuosos.",
+  "SLY_SHOP_INTRO": "¡Ahhh, pequeño viajero! ¡Eres tú! El diminuto héroe del que tanto he oído hablar, saltando de la sombra a la luz. ¡Qué dicha!<page>¡Je, je! ¡He preparado mis mercancías para la temporada festiva! Has desafiado muchos lugares profundos y lúgubres, ¿verdad? Tal vez un poco de brillo y regocijo caliente ese silencioso caparazón tuyo, ¿eh?",
+  "SLY_NOSTOCK_1": "¡Vaya, me has dejado sin nada! Ni un solo adorno o cascabel de sobra. Tanto entusiasmo calienta mi corazoncito, querido viajero.<page>Por ahora, llévate tus tesoros y reparte un poco de alegría, ¿quieres? Al mundo siempre le viene bien un toque de luz. ¡Hasta la vista, mi festivo amigo!",
+  "SLY_NOSTOCK_2": "¡Vaya, me has dejado sin nada! Ni un solo adorno o cascabel de sobra. Tanto entusiasmo calienta mi corazoncito, querido viajero.<page>Por ahora, llévate tus tesoros y reparte un poco de alegría, ¿quieres? Al mundo siempre le viene bien un toque de luz. ¡Hasta la vista, mi festivo amigo!",
+  "SLY_MAIN": "Merrywisp",
+  "SLY_SUB": "",
+  "SLY_SUPER": "Caballero Festivo",
+  "MERRY_DIALOG_1": "Que la bendición te acompañe, pequeño. Tienes buen ojo para la alegría. ¡Viaja con cuidado, y que tu camino sea alegre y brillante!",
+  "MERRY_DIALOG_2": "¡Tengo regalos para los de corazón festivo! Baratijas, adornos e incluso amuletos para añadir un cascabel alegre a tu viaje. Vamos, echa un vistazo. Trae un poco de brillo a este reino sombrío.",
+  "MERRY_DIALOG_3": "¿Aún aquí? ¿O tal vez estás saboreando la alegría? Sin prisas, sin prisas... ¡Después de todo, la temporada es para compartir!"
+}
+

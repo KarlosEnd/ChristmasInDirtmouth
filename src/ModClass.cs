@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Modding;
 using UnityEngine;
 using Satchel;
 using Satchel.BetterMenus;
+
 
 namespace ChristmasInDirtmouth
 {
@@ -23,11 +24,46 @@ namespace ChristmasInDirtmouth
         private EasterEggHandler easterEggHandler;
         private Menu MenuRef;
 
+        public void UpdateNPCMapFromTranslations()
+        {
+            if (EasterEggHandler.CuteMas) return;
+
+            foreach (var key in new List<string>(ModItems.NPCMap.Keys))
+            {
+                if (LocalizationManager.TryGetText(key, out string text))
+                {
+                    ModItems.NPCMap[key] = text;
+                }
+            }
+
+            if (MerryDialogueManager != null)
+            {
+                MerryDialogueManager.Conversations.Clear();
+                ModItems.AddManagerConversations(MerryDialogueManager);
+            }
+        }
+
+        private string OnGlobalLanguageGet(string key, string sheetTitle, string orig)
+        {
+            // Re-cargar si el jugador cambia el idioma en el menú
+            if (LocalizationManager.TryGetText(key, out string translated))
+            {
+                return translated;
+            }
+            return orig;
+        }
+
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Logger.Info("Initializing");
 
             Instance = this;
+
+            // 1. Cargar traducciones desde el JSON
+            LocalizationManager.LoadTranslations();
+
+            // ModHooks para detectar si el usuario cambia el idioma en las opciones del juego
+            ModHooks.LanguageGetHook += OnGlobalLanguageGet;
 
             ModHooks.HeroUpdateHook += OnHeroUpdate;
 
@@ -37,7 +73,9 @@ namespace ChristmasInDirtmouth
             Satchel.CustomArrowPrompt.Prepare(preloadedObjects["Cliffs_01"]["Cornifer Card"]);
             // Dialog manager
             MerryDialogueManager = new Satchel.CustomDialogueManager(preloadedObjects["Cliffs_01"]["Cornifer Card"]);
-            ModItems.AddManagerConversations(MerryDialogueManager);
+
+            // Actualizar ModItems.NPCMap con las traducciones para Satchel y registrar diálogos
+            UpdateNPCMapFromTranslations();
 
             // Create scene handlers
             dirtmouthHandler = new DirtmouthSceneHandler();
@@ -117,6 +155,8 @@ namespace ChristmasInDirtmouth
         public void Unload()
         {
             Logger.Warning("Christmas in Dirtmouth unloaded");
+            ModHooks.HeroUpdateHook -= OnHeroUpdate;
+            ModHooks.LanguageGetHook -= OnGlobalLanguageGet;
             dirtmouthHandler = null;
             shopHandler = null;
             easterEggHandler = null;

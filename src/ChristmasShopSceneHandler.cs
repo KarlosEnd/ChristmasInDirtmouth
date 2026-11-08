@@ -212,19 +212,19 @@ namespace ChristmasInDirtmouth
         public string OnLanguageGet(string key, string sheetTitle, string orig)
         {
             if (!SceneActive) { return orig; }
-            // Replacing NPC title (pulled from the FSM of the sly shop)
-            if ((sheetTitle == "Sly" || sheetTitle == "Titles" || sheetTitle == "SatchelCustomDialogue") && ModItems.NPCMap.ContainsKey(key))
+
+            // Consulta si existe la clave en el diccionario de traducciones cargado
+            if (LocalizationManager.TryGetText(key, out string translatedText))
             {
-                return ModItems.NPCMap[key];
+                return translatedText;
             }
-            // Replacing UI / Price values if present
-            if (sheetTitle == "UI" && ModItems.ShopMap.ContainsKey(key)){
-                return ModItems.ShopMap[key];
-            }
+
+            // Si no está traducida, revisa los mapas de precios o devuelve el texto original
             if (sheetTitle == "Prices" && ModItems.PriceMap.ContainsKey(key))
             {
                 return ModItems.PriceMap[key];
             }
+
             return orig;
         }
 
