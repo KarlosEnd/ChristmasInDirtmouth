@@ -35,10 +35,15 @@
     
     <ItemGroup>
       <LangFiles Include="Lang\*" />
+      <AudioFiles Include="*.ogg;*.wav;*.mp3" />
     </ItemGroup>
     <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/Lang/" Condition="Exists('Lang')" />
     <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(ExportDir)/$(TargetName)/Lang/" Condition="Exists('Lang')" />
     <Copy SourceFiles="@(LangFiles)" DestinationFolder="$(ExportDir)/$(TargetName)/zip/Lang/" Condition="Exists('Lang')" />
+
+    <Copy SourceFiles="@(AudioFiles)" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" Condition="'@(AudioFiles)' != ''" />
+    <Copy SourceFiles="@(AudioFiles)" DestinationFolder="$(ExportDir)/$(TargetName)/" Condition="'@(AudioFiles)' != ''" />
+    <Copy SourceFiles="@(AudioFiles)" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" Condition="'@(AudioFiles)' != ''" />
 
     <Copy Condition="'$(DocumentationFile)' != ''" SourceFiles="ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb;$(TargetDir)/$(TargetName).xml" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" />
     <Copy Condition="'$(DocumentationFile)' == ''" SourceFiles="../ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" />
@@ -341,5 +346,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\.gitignore" />
+    <None Include="*.ogg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

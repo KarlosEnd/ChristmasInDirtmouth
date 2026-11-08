@@ -87,6 +87,7 @@ namespace ChristmasInDirtmouth
                 preloadedObjects["Cliffs_01"]["Cornifer Card"]
             );
             easterEggHandler = new EasterEggHandler();
+            ChristmasMusicController.Initialize();
 
             Logger.Info("Initialized");
         }
@@ -157,6 +158,7 @@ namespace ChristmasInDirtmouth
             Logger.Warning("Christmas in Dirtmouth unloaded");
             ModHooks.HeroUpdateHook -= OnHeroUpdate;
             ModHooks.LanguageGetHook -= OnGlobalLanguageGet;
+            ChristmasMusicController.Unload();
             dirtmouthHandler = null;
             shopHandler = null;
             easterEggHandler = null;

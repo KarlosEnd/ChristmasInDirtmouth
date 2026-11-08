@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -281,6 +281,7 @@ namespace ChristmasInDirtmouth
                     // Back ground music
                     AudioSource audio = transform.Find("audio").GetComponent<AudioSource>();
                     audio.Play();
+                    ChristmasMusicController.SetTreeCreditsPlaying(true);
 
                     // Enable Credits
                     GameObject credits = transform.Find("credits").gameObject;
@@ -325,6 +326,7 @@ namespace ChristmasInDirtmouth
             anim.Play("fireworks off", -1, 0f);
             yield return new WaitForSeconds(5);
             fireworks.SetActive(false);
+            ChristmasMusicController.SetTreeCreditsPlaying(false);
             yield break;
         }
     }
