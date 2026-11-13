@@ -22,7 +22,8 @@ namespace ChristmasInDirtmouth
         /// </summary>
         public static List<string> Playlist = new List<string>
         {
-            "SleighBells.ogg"
+            "SleighBells.ogg",
+            "SleighBells_v0.ogg"
         };
 
         /// <summary>
@@ -33,9 +34,6 @@ namespace ChristmasInDirtmouth
 
         /// <summary>
         /// Factor de volumen base para las canciones de la lista de reproducción (0.0f a 1.0f).
-        /// Los archivos comerciales/externos suelen estar masterizados a niveles más altos que la música
-        /// original del juego. Por defecto se establece en 0.5f (50%) para nivelar el volumen.
-        /// Puedes ajustarlo al valor que prefieras.
         /// </summary>
         public static float MusicVolume = 0.5f;
     }
@@ -45,6 +43,10 @@ namespace ChristmasInDirtmouth
     /// Se activa cuando se compra el Árbol de Navidad más 2 objetos adicionales de la tienda.
     /// Emite a través del AudioMixer de la música original del juego, heredando su volumen
     /// y el desvanecimiento progresivo al alejarse del centro de Bocasucia.
+    ///
+    /// La música suena de forma continua en todo Bocasucia y sus interiores (casas y tiendas):
+    /// al cambiar entre estas escenas NO se corta ni se reinicia. Solo se detiene al salir
+    /// de la zona de Bocasucia (o al entrar a la tienda navideña personalizada, que tiene su propia música).
     /// </summary>
     public class ChristmasMusicController : MonoBehaviour
     {
@@ -57,8 +59,13 @@ namespace ChristmasInDirtmouth
         private static readonly FieldInfo MusicSourcesField = typeof(AudioManager).GetField("musicSources", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private int currentTrackIndex = 0;
-        private bool isInTown = false;
+
+        /// <summary>
+        /// True mientras el jugador esté en Bocasucia (Town) o en cualquiera de sus interiores válidos.
+        /// </summary>
+        private bool isInDirtmouthZone = false;
         private bool isTreeCreditsPlaying = false;
+		private bool isInInterior = false;
 
         public static void Initialize()
         {
@@ -82,6 +89,15 @@ namespace ChristmasInDirtmouth
             }
         }
 
+        /// <summary>
+        /// Comprueba si la escena es Bocasucia o uno de sus interiores (casas, tiendas, carpas).
+        /// La tienda navideña personalizada NO cuenta, ya que tiene su propia música.
+        /// </summary>
+        private static bool IsDirtmouthZone(string sceneName)
+        {
+            return ChristmasDialogueManager.IsDirtmouthScene(sceneName);
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -93,10 +109,12 @@ namespace ChristmasInDirtmouth
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnActiveSceneChanged;
             On.AudioManager.BeginApplyMusicCue += OnAudioManagerBeginApplyMusicCue;
 
-            // Comprobar escena actual si ya estábamos en Town
+			// Comprobar escena actual si ya estábamos en Bocasucia o en un interior
             Scene currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            isInTown = (currentScene.name == "Town");
-            if (isInTown && IsChristmasMusicConditionMet())
+            isInDirtmouthZone = IsDirtmouthZone(currentScene.name);
+            isInInterior = isInDirtmouthZone && currentScene.name != "Town"; // NUEVA LÍNEA
+
+            if (isInDirtmouthZone && IsChristmasMusicConditionMet())
             {
                 StartPlaylist();
             }
@@ -156,11 +174,19 @@ namespace ChristmasInDirtmouth
 
         private void OnActiveSceneChanged(Scene from, Scene to)
         {
-            isInTown = (to.name == "Town");
+            // Ignorar notificaciones de escenas inválidas/vacías para no cortar la música por error
+            if (!to.IsValid() || string.IsNullOrEmpty(to.name)) return;
+
+            isInDirtmouthZone = IsDirtmouthZone(to.name);
+			isInInterior = isInDirtmouthZone && to.name != "Town";
+
+            // Los créditos del árbol viven en un objeto de Town, que se destruye al cambiar de escena
             isTreeCreditsPlaying = false;
 
-            if (isInTown)
+            if (isInDirtmouthZone)
             {
+                // Si la lista ya se está reproduciendo (p. ej. al pasar de Town a una casa),
+                // StartPlaylist no hace nada: la canción continúa sin cortarse ni reiniciarse.
                 if (IsChristmasMusicConditionMet())
                 {
                     StartPlaylist();
@@ -168,18 +194,24 @@ namespace ChristmasInDirtmouth
             }
             else
             {
+                // Salimos de Bocasucia: ahora sí se detiene
                 StopPlaylist();
             }
         }
 
         private void Update()
         {
-            if (audioSource != null)
+			if (audioSource != null)
             {
-                audioSource.volume = Mathf.Clamp01(ChristmasMusicConfig.MusicVolume);
+                float targetVolume = ChristmasMusicConfig.MusicVolume;
+                if (isInInterior)
+                {
+                    targetVolume += 0.1f; // Sube el volumen un 0.1 en las casas
+                }
+                audioSource.volume = Mathf.Clamp01(targetVolume);
             }
 
-            if (!isInTown) return;
+            if (!isInDirtmouthZone) return;
 
             bool shouldPlay = IsChristmasMusicConditionMet() && !isTreeCreditsPlaying;
 
@@ -205,14 +237,15 @@ namespace ChristmasInDirtmouth
 
         /// <summary>
         /// Intercepta la llamada a BeginApplyMusicCue de AudioManager.
-        /// Si estamos en Bocasucia (Town) y la condición navideña está activa,
-        /// reemplazamos el MusicCue por uno vacío para evitar que suene la melodía original.
+        /// Si estamos en Bocasucia o en uno de sus interiores y la condición navideña está activa,
+        /// reemplazamos el MusicCue por uno vacío para evitar que suene la melodía original
+        /// (o que se aplique un cambio de música/snapshot que afecte a nuestra pista).
         /// </summary>
         private IEnumerator OnAudioManagerBeginApplyMusicCue(On.AudioManager.orig_BeginApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
         {
-            if (isInTown && IsChristmasMusicConditionMet())
+            if (isInDirtmouthZone && IsChristmasMusicConditionMet())
             {
-                // Silenciar la música original de Bocasucia
+                // Silenciar la música original de Bocasucia y sus interiores
                 musicCue = ScriptableObject.CreateInstance<MusicCue>();
             }
 
@@ -271,9 +304,17 @@ namespace ChristmasInDirtmouth
             }
         }
 
+        /// <summary>
+        /// Condición compartida por todo el bucle de reproducción.
+        /// </summary>
+        private bool CanKeepPlaying()
+        {
+            return isInDirtmouthZone && IsChristmasMusicConditionMet() && !isTreeCreditsPlaying;
+        }
+
         private IEnumerator PlaylistLoop()
         {
-            while (isInTown && IsChristmasMusicConditionMet() && !isTreeCreditsPlaying)
+            while (CanKeepPlaying())
             {
                 AssignMusicMixerGroup();
 
@@ -309,21 +350,35 @@ namespace ChristmasInDirtmouth
                     continue;
                 }
 
-                audioSource.clip = clipToPlay;
+                // Si mientras cargaba el audio salimos de la zona, no empezar a reproducir
+                if (!CanKeepPlaying())
+                {
+                    break;
+                }
+
+				audioSource.clip = clipToPlay;
                 audioSource.loop = false;
-                audioSource.volume = Mathf.Clamp01(ChristmasMusicConfig.MusicVolume);
+
+                float targetVolume = ChristmasMusicConfig.MusicVolume;
+                if (isInInterior)
+                {
+                    targetVolume += 0.1f; // Sube el volumen un 0.1 en las casas
+                }
+                audioSource.volume = Mathf.Clamp01(targetVolume);
+                
                 audioSource.Play();
 
                 Logger.Info($"ChristmasMusicController: Reproduciendo pista [{currentTrackIndex + 1}/{ChristmasMusicConfig.Playlist.Count}]: '{clipToPlay.name}'");
 
                 // Esperar a que la pista termine de sonar
-                while (audioSource != null && audioSource.isPlaying && isInTown && IsChristmasMusicConditionMet() && !isTreeCreditsPlaying)
+                // (cambiar entre Bocasucia y sus interiores NO interrumpe este bucle)
+                while (audioSource != null && audioSource.isPlaying && CanKeepPlaying())
                 {
                     yield return null;
                 }
 
                 // Si el estado cambió durante la reproducción, detener y salir
-                if (!isInTown || !IsChristmasMusicConditionMet() || isTreeCreditsPlaying)
+                if (!CanKeepPlaying())
                 {
                     if (audioSource != null && audioSource.isPlaying)
                     {
@@ -340,7 +395,7 @@ namespace ChristmasInDirtmouth
                 if (ChristmasMusicConfig.DelayBetweenSongs > 0f)
                 {
                     float elapsed = 0f;
-                    while (elapsed < ChristmasMusicConfig.DelayBetweenSongs && isInTown && IsChristmasMusicConditionMet() && !isTreeCreditsPlaying)
+                    while (elapsed < ChristmasMusicConfig.DelayBetweenSongs && CanKeepPlaying())
                     {
                         elapsed += Time.unscaledDeltaTime;
                         yield return null;

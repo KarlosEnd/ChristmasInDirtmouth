@@ -88,6 +88,7 @@ namespace ChristmasInDirtmouth
             );
             easterEggHandler = new EasterEggHandler();
             ChristmasMusicController.Initialize();
+            ChristmasDialogueManager.Initialize();
 
             Logger.Info("Initialized");
         }
@@ -159,6 +160,7 @@ namespace ChristmasInDirtmouth
             ModHooks.HeroUpdateHook -= OnHeroUpdate;
             ModHooks.LanguageGetHook -= OnGlobalLanguageGet;
             ChristmasMusicController.Unload();
+            ChristmasDialogueManager.Unload();
             dirtmouthHandler = null;
             shopHandler = null;
             easterEggHandler = null;
